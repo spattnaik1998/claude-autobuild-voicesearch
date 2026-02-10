@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { searchWithSerper } from '@/lib/serper';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,9 +20,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Integrate with Serper API
+    const results = await searchWithSerper(query, apiKey);
     return NextResponse.json({
-      results: [],
+      results,
       query,
     });
   } catch (error) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { summarizeSearchResults } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_OPENAI_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: 'OpenAI API key not configured' },
@@ -19,12 +20,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Integrate with OpenAI API
-    return NextResponse.json({
-      summary: '',
-      keyPoints: [],
-      wordCount: 0,
-    });
+    const summary = await summarizeSearchResults(results, apiKey);
+    return NextResponse.json(summary);
   } catch (error) {
     console.error('Summarize error:', error);
     return NextResponse.json(

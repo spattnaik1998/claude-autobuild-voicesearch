@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { textToSpeech } from '@/lib/elevenlabs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,11 +20,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Integrate with ElevenLabs API
-    return NextResponse.json({
-      audioUrl: '',
-      duration: 0,
-    });
+    const result = await textToSpeech(text, apiKey);
+    return NextResponse.json(result);
   } catch (error) {
     console.error('TTS error:', error);
     return NextResponse.json(
