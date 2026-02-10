@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, voice } = await request.json();
+    const { text } = await request.json();
 
     if (!text || text.trim().length === 0) {
       return NextResponse.json(
