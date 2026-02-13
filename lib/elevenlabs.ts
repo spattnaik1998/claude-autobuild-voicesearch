@@ -1,15 +1,30 @@
 export interface TTSResult {
   audioUrl: string;
+  /**
+   * Duration in seconds (matches HTMLAudioElement.duration API)
+   * Use this value with HTML5 Audio API which expects duration in seconds.
+   */
   duration: number;
 }
 
+/**
+ * Convert text to speech using ElevenLabs API
+ * @param text - Text to convert
+ * @param apiKey - ElevenLabs API key
+ * @returns Audio URL (base64) and duration in seconds
+ *
+ * Voice can be configured via ELEVENLABS_VOICE_ID env var.
+ * Default: 21m00Tcm4TlvDq8ikWAM (Rachel - pre-made voice)
+ * See: https://elevenlabs.io/docs/voices/pre-made-voices
+ */
 export async function textToSpeech(
   text: string,
   apiKey: string
 ): Promise<TTSResult> {
   try {
+    const voiceId = process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM';
     const response = await fetch(
-      'https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM',
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
         method: 'POST',
         headers: {
@@ -42,7 +57,7 @@ export async function textToSpeech(
 
     return {
       audioUrl: `data:audio/mpeg;base64,${base64Audio}`,
-      duration: Math.round(estimatedDuration * 1000), // Convert to milliseconds
+      duration: Math.round(estimatedDuration), // Duration in seconds (matches HTMLAudioElement.duration API)
     };
   } catch (error) {
     console.error('ElevenLabs TTS error:', error);

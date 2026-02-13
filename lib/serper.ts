@@ -4,6 +4,26 @@ export interface SearchResult {
   url: string;
 }
 
+interface SerperOrganicResult {
+  title: string;
+  snippet: string;
+  link: string;
+  position?: number;
+  date?: string;
+}
+
+interface SerperResponse {
+  organic?: SerperOrganicResult[];
+  answerBox?: {
+    answer?: string;
+    snippet?: string;
+  };
+  searchParameters?: {
+    q: string;
+    type: string;
+  };
+}
+
 export async function searchWithSerper(
   query: string,
   apiKey: string
@@ -25,10 +45,10 @@ export async function searchWithSerper(
       throw new Error(`Serper API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data: SerperResponse = await response.json();
 
     // Transform Serper results to our format
-    return (data.organic || []).map((result: any) => ({
+    return (data.organic || []).map((result: SerperOrganicResult) => ({
       title: result.title,
       description: result.snippet,
       url: result.link,

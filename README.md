@@ -48,11 +48,27 @@ Search any topic, get AI-summarized answers, and listen to them as natural speec
    - `ELEVENLABS_API_KEY` - [Get from ElevenLabs](https://elevenlabs.io/)
    - `SUPABASE_URL` & `SUPABASE_SERVICE_KEY` - [Get from Supabase](https://supabase.com/) (optional)
 
+### Setup Checklist
+
+Before running locally, complete these steps:
+
+- [ ] Install Node.js 18+ (`node --version` to check)
+- [ ] Clone the repository
+- [ ] Run `npm install`
+- [ ] Create `.env.local` from `.env.example`: `cp .env.example .env.local`
+- [ ] Add your API keys to `.env.local`:
+  - OPENAI_API_KEY from https://platform.openai.com/api-keys
+  - SERPER_API_KEY from https://serper.dev/
+  - ELEVENLABS_API_KEY from https://elevenlabs.io/
+- [ ] (Optional) Customize ELEVENLABS_VOICE_ID or OPENAI_MODEL
+- [ ] Run `npm run dev`
+- [ ] Open http://localhost:3000
+
 3. **Run development server**
    ```bash
    npm run dev
    ```
-   
+
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Building & Deployment
@@ -181,20 +197,49 @@ npm run format
 
 ## Troubleshooting
 
-### API Keys not working
-- Verify keys are in `.env.local` (not `.env`)
-- Check key permissions and expiration
-- Ensure variable names match exactly
+### "API key not configured" error
+- Ensure `.env.local` exists in project root (not `.env`)
+- Check that all three API keys (OPENAI_API_KEY, SERPER_API_KEY, ELEVENLABS_API_KEY) are present
+- Restart dev server after adding keys: `npm run dev`
+- Verify key permissions and expiration on respective platforms
+
+### Audio progress bar not working
+- Clear browser cache and reload the page
+- Check browser console (F12) for JavaScript errors
+- Verify audio file downloaded correctly from ElevenLabs
+- Test with different audio lengths (short and long summaries)
+
+### TypeScript errors during build
+- Run `npm install` to ensure all dependencies are installed
+- Delete `.next` folder and rebuild: `rm -rf .next && npm run build`
+- Check that you're using Node.js 18+ (`node --version`)
+
+### Search results not appearing
+- Check that SERPER_API_KEY is valid and not expired
+- Verify network connectivity to Serper API
+- Check browser console for specific error messages
+
+### AI summarization fails
+- Verify OPENAI_API_KEY is valid and not expired
+- Check your OpenAI account has available credits
+- Ensure the configured model (OPENAI_MODEL) exists and is accessible
+- Check OpenAI API status at https://status.openai.com
+
+### Text-to-speech audio won't play
+- Check that ELEVENLABS_API_KEY is valid
+- Verify your ElevenLabs account has voice usage available
+- Check that the ELEVENLABS_VOICE_ID is correct (if customized)
+- Try downloading the audio and playing locally to rule out browser issues
 
 ### Database connection fails
-- Check `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`
+- Check `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` (optional - only needed for history)
 - Verify network connectivity
 - Check Supabase project is active
 
 ### Vercel deployment fails
-- Ensure all secrets are set in Vercel dashboard
+- Ensure all secrets are set in Vercel dashboard (OPENAI_API_KEY, SERPER_API_KEY, ELEVENLABS_API_KEY)
 - Check build logs for specific errors
-- Verify Node.js version is 18+
+- Verify Node.js version is 18+ in Vercel project settings
 
 ## User Interface
 

@@ -14,6 +14,7 @@ export async function summarizeSearchResults(
       .map((r) => `${r.title}: ${r.description}`)
       .join('\n\n');
 
+    const model = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -21,7 +22,7 @@ export async function summarizeSearchResults(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model,
         messages: [
           {
             role: 'system',

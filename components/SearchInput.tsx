@@ -33,9 +33,23 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     onSubmit(trimmedQuery);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isLoading) {
-      handleSubmit(e as any);
+      e.preventDefault();
+
+      // Inline validation (extracted from handleSubmit)
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setError('Please enter a search query');
+        return;
+      }
+      if (trimmedQuery.length < 2) {
+        setError('Query must be at least 2 characters');
+        return;
+      }
+
+      setError('');
+      onSubmit(trimmedQuery);
     }
   };
 
