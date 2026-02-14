@@ -13,6 +13,9 @@ import { SearchHistory } from '@/components/SearchHistory';
 import { ShareButton } from '@/components/ShareButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher';
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { SettingsPanel } from '@/components/SettingsPanel';
+import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useToast } from '@/lib/hooks';
 import type { SearchResult, SummaryResponse, QuestionsResponse, SearchHistoryEntry } from '@/types';
@@ -30,9 +33,40 @@ export default function Home() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isQuestionsLoading, setIsQuestionsLoading] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const { activeWorkspaceId, incrementSearchCount } = useWorkspaceStore();
   const { success } = useToast();
+
+  // Handle keyboard shortcuts for opening modals
+  useEffect(() => {
+    const handleShowShortcuts = () => {
+      setShortcutsOpen(true);
+    };
+    const handleOpenHistory = () => {
+      setHistoryOpen(true);
+    };
+    const handleOpenSettings = () => {
+      setSettingsOpen(true);
+    };
+    const handleOpenNotifications = () => {
+      setNotificationsOpen(true);
+    };
+
+    window.addEventListener('show-shortcuts-modal', handleShowShortcuts);
+    window.addEventListener('open-history', handleOpenHistory);
+    window.addEventListener('open-settings', handleOpenSettings);
+    window.addEventListener('open-notifications', handleOpenNotifications);
+
+    return () => {
+      window.removeEventListener('show-shortcuts-modal', handleShowShortcuts);
+      window.removeEventListener('open-history', handleOpenHistory);
+      window.removeEventListener('open-settings', handleOpenSettings);
+      window.removeEventListener('open-notifications', handleOpenNotifications);
+    };
+  }, []);
 
   // Load search from URL on mount (for shared links)
   useEffect(() => {
@@ -225,6 +259,26 @@ export default function Home() {
             >
               📜
             </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setNotificationsOpen(true)}
+              className="transition-all duration-200 relative"
+              aria-label="Open notifications"
+              title="Notifications (Cmd+Shift+N)"
+            >
+              🔔
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setSettingsOpen(true)}
+              className="transition-all duration-200"
+              aria-label="Open settings"
+              title="Settings (Cmd+,)"
+            >
+              ⚙️
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -319,6 +373,20 @@ export default function Home() {
           </>
         )}
       </div>
+
+      {/* Modals */}
+      <NotificationCenter
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+      />
+      <SettingsPanel
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
+      <KeyboardShortcutsModal
+        isOpen={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
 
       <style jsx>{`
         @keyframes blob {

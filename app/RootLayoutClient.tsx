@@ -30,6 +30,18 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
       const input = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
       input?.focus();
     },
+    onOpenHistory: () => {
+      // Handled by page component
+      window.dispatchEvent(new CustomEvent('open-history'));
+    },
+    onOpenSettings: () => {
+      // Handled by page component
+      window.dispatchEvent(new CustomEvent('open-settings'));
+    },
+    onOpenNotifications: () => {
+      // Handled by page component
+      window.dispatchEvent(new CustomEvent('open-notifications'));
+    },
   });
 
   return (
