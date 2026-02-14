@@ -35,3 +35,53 @@ export interface ApiError {
   details?: string;
   statusCode: number;
 }
+
+export interface QuestionsResponse {
+  questions: string[];
+}
+
+export interface QuestionsRequest {
+  query: string;
+  summary: string;
+}
+
+export interface SearchHistoryEntry {
+  id: string;
+  query: string;
+  timestamp: number;
+  results: SearchResult[];
+  summary: SummaryResponse | null;
+  questions: string[];
+  workspaceId?: string;
+}
+
+export interface Workspace {
+  id: string;
+  name: string;
+  icon: string;
+  color: 'teal' | 'purple' | 'blue' | 'green';
+  createdAt: number;
+  isFavorite: boolean;
+  isArchived: boolean;
+  searchCount: number;
+}
+
+export interface Command {
+  id: string;
+  label: string;
+  category: 'search' | 'workspace' | 'action' | 'setting' | 'history';
+  icon: string;
+  shortcut?: string;
+  action: () => void | Promise<void>;
+  metadata?: Record<string, unknown>;
+}
+
+export interface Notification {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  title: string;
+  message?: string;
+  timestamp: number;
+  isRead: boolean;
+  actionUrl?: string;
+}

@@ -4,6 +4,20 @@ export interface SummaryResult {
   wordCount: number;
 }
 
+/**
+ * Extract JSON from markdown code blocks or raw JSON string
+ * Handles both "```json\n{...}\n```" and raw JSON formats
+ */
+function extractJSON(content: string): string {
+  // Try to extract from markdown code block
+  const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (jsonMatch && jsonMatch[1]) {
+    return jsonMatch[1].trim();
+  }
+  // Return as-is if no code block found
+  return content.trim();
+}
+
 export async function summarizeSearchResults(
   results: Array<{ title: string; description: string; url: string }>,
   apiKey: string
@@ -47,8 +61,9 @@ export async function summarizeSearchResults(
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // Parse the JSON response
-    const parsed = JSON.parse(content);
+    // Extract JSON from markdown code blocks and parse
+    const jsonString = extractJSON(content);
+    const parsed = JSON.parse(jsonString);
 
     return {
       summary: parsed.summary || '',

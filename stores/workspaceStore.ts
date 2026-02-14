@@ -1,0 +1,159 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+export interface Workspace {
+  id: string;
+  name: string;
+  icon: string;
+  color: 'teal' | 'purple' | 'blue' | 'green';
+  createdAt: number;
+  isFavorite: boolean;
+  isArchived: boolean;
+  searchCount: number;
+}
+
+interface WorkspaceState {
+  workspaces: Workspace[];
+  activeWorkspaceId: string | null;
+  isLoading: boolean;
+}
+
+interface WorkspaceActions {
+  createWorkspace: (name: string, icon?: string, color?: Workspace['color']) => void;
+  deleteWorkspace: (id: string) => void;
+  updateWorkspace: (id: string, updates: Partial<Workspace>) => void;
+  switchWorkspace: (id: string) => void;
+  toggleFavorite: (id: string) => void;
+  toggleArchive: (id: string) => void;
+  incrementSearchCount: (id: string) => void;
+  getActiveWorkspace: () => Workspace | null;
+}
+
+type WorkspaceStore = WorkspaceState & WorkspaceActions;
+
+const DEFAULT_WORKSPACE: Workspace = {
+  id: 'default',
+  name: 'Personal',
+  icon: '🏠',
+  color: 'teal',
+  createdAt: Date.now(),
+  isFavorite: true,
+  isArchived: false,
+  searchCount: 0,
+};
+
+export const useWorkspaceStore = create<WorkspaceStore>()(
+  persist(
+    (set, get) => ({
+      workspaces: [DEFAULT_WORKSPACE],
+      activeWorkspaceId: 'default',
+      isLoading: false,
+
+      createWorkspace: (name, icon = '📁', color = 'teal') => {
+        const newWorkspace: Workspace = {
+          id: `ws_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name,
+          icon,
+          color,
+          createdAt: Date.now(),
+          isFavorite: false,
+          isArchived: false,
+          searchCount: 0,
+        };
+        set((state) => ({
+          workspaces: [...state.workspaces, newWorkspace],
+          activeWorkspaceId: newWorkspace.id,
+        }));
+      },
+
+      deleteWorkspace: (id) => {
+        // Don't allow deleting the only non-archived workspace
+        set((state) => {
+          const nonArchivedCount = state.workspaces.filter((ws) => !ws.isArchived).length;
+          if (nonArchivedCount <= 1 && !state.workspaces.find((ws) => ws.id === id)?.isArchived) {
+            return state;
+          }
+
+          const filtered = state.workspaces.filter((ws) => ws.id !== id);
+          const newActiveId =
+            state.activeWorkspaceId === id
+              ? filtered.find((ws) => !ws.isArchived)?.id || filtered[0]?.id || 'default'
+              : state.activeWorkspaceId;
+
+          return {
+            workspaces: filtered,
+            activeWorkspaceId: newActiveId,
+          };
+        });
+      },
+
+      updateWorkspace: (id, updates) => {
+        set((state) => ({
+          workspaces: state.workspaces.map((ws) =>
+            ws.id === id ? { ...ws, ...updates } : ws
+          ),
+        }));
+      },
+
+      switchWorkspace: (id) => {
+        const workspace = get().workspaces.find((ws) => ws.id === id);
+        if (workspace && !workspace.isArchived) {
+          set({ activeWorkspaceId: id });
+        }
+      },
+
+      toggleFavorite: (id) => {
+        set((state) => ({
+          workspaces: state.workspaces.map((ws) =>
+            ws.id === id ? { ...ws, isFavorite: !ws.isFavorite } : ws
+          ),
+        }));
+      },
+
+      toggleArchive: (id) => {
+        set((state) => {
+          // Don't archive if it's the only active workspace
+          const target = state.workspaces.find((ws) => ws.id === id);
+          if (target && !target.isArchived) {
+            const nonArchivedCount = state.workspaces.filter((ws) => !ws.isArchived).length;
+            if (nonArchivedCount <= 1) return state;
+          }
+
+          const updated = state.workspaces.map((ws) =>
+            ws.id === id ? { ...ws, isArchived: !ws.isArchived } : ws
+          );
+
+          const newActiveId =
+            state.activeWorkspaceId === id && target?.isArchived === false
+              ? updated.find((ws) => !ws.isArchived)?.id || updated[0]?.id || 'default'
+              : state.activeWorkspaceId;
+
+          return {
+            workspaces: updated,
+            activeWorkspaceId: newActiveId,
+          };
+        });
+      },
+
+      incrementSearchCount: (id) => {
+        set((state) => ({
+          workspaces: state.workspaces.map((ws) =>
+            ws.id === id ? { ...ws, searchCount: ws.searchCount + 1 } : ws
+          ),
+        }));
+      },
+
+      getActiveWorkspace: () => {
+        const state = get();
+        return state.workspaces.find((ws) => ws.id === state.activeWorkspaceId) || null;
+      },
+    }),
+    {
+      name: 'workspace-storage',
+      partialize: (state) => ({
+        workspaces: state.workspaces,
+        activeWorkspaceId: state.activeWorkspaceId,
+      }),
+    }
+  )
+);

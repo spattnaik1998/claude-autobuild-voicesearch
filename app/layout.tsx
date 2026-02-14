@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { RootLayoutClient } from "./RootLayoutClient";
 
 export const metadata: Metadata = {
   title: "VoiceSearch Insights",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <RootLayoutClient>{children}</RootLayoutClient>
+      </body>
     </html>
   );
 }

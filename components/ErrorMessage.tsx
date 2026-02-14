@@ -19,11 +19,11 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
   if (isDismissed) return null;
 
   return (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
+    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 transition-colors duration-300">
       <div className="flex gap-3">
         <div className="flex-shrink-0">
           <svg
-            className="w-5 h-5 text-red-600 mt-0.5"
+            className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 transition-colors duration-300"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -35,8 +35,8 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
           </svg>
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-red-900">{title}</h3>
-          <p className="text-sm text-red-700 mt-1">{message}</p>
+          <h3 className="text-sm font-semibold text-red-900 dark:text-red-300 transition-colors duration-300">{title}</h3>
+          <p className="text-sm text-red-700 dark:text-red-400 mt-1 transition-colors duration-300">{message}</p>
           <div className="flex gap-2 mt-3">
             {onRetry && (
               <Button size="sm" variant="secondary" onClick={onRetry}>

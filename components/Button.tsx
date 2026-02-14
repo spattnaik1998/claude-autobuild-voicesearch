@@ -23,7 +23,7 @@ export const Button: React.FC<ButtonProps> = ({
     inline-flex items-center justify-center font-medium
     rounded-lg transition-all duration-200
     disabled:opacity-50 disabled:cursor-not-allowed
-    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 dark:focus:ring-offset-slate-800
     ${fullWidth ? 'w-full' : ''}
   `;
 
@@ -33,19 +33,23 @@ export const Button: React.FC<ButtonProps> = ({
       text-white shadow-md hover:shadow-lg
       hover:from-blue-600 hover:to-indigo-700
       active:shadow-sm
+      dark:from-blue-600 dark:to-indigo-700 dark:hover:from-blue-700 dark:hover:to-indigo-800
     `,
     secondary: `
       bg-slate-100 text-slate-900
       hover:bg-slate-200 active:bg-slate-150
       border border-slate-200
+      dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-600
     `,
     ghost: `
       bg-transparent text-blue-600
       hover:bg-blue-50 active:bg-blue-100
+      dark:text-blue-400 dark:hover:bg-blue-900/20 dark:active:bg-blue-900/40
     `,
     danger: `
       bg-red-500 text-white hover:bg-red-600
       active:bg-red-700 shadow-md hover:shadow-lg
+      dark:bg-red-600 dark:hover:bg-red-700 dark:active:bg-red-800
     `,
   };
 

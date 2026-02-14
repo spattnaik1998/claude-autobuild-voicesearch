@@ -14,16 +14,16 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const variants = {
     default: `
-      bg-white border border-slate-200
-      rounded-xl shadow-sm
+      bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+      rounded-xl shadow-sm dark:shadow-sm dark:shadow-black/20
     `,
     highlighted: `
-      bg-gradient-to-br from-slate-50 to-blue-50
-      border border-blue-200 rounded-xl shadow-sm
+      bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/30
+      border border-blue-200 dark:border-blue-800 rounded-xl shadow-sm dark:shadow-sm dark:shadow-black/20
     `,
     elevated: `
-      bg-white rounded-xl
-      shadow-lg
+      bg-white dark:bg-slate-800 rounded-xl
+      shadow-lg dark:shadow-lg dark:shadow-black/30
     `,
   };
 

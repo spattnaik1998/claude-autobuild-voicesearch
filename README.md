@@ -1,6 +1,6 @@
-# VoiceSearch Insights 🔊
+# VoiceSearch Insights 💡
 
-Search any topic, get AI-summarized answers, and listen to them as natural speech.
+Search any topic, get AI-summarized answers, and explore with AI-powered follow-up questions.
 
 **[🌐 Live Demo](https://claude-autobuild-voicesearch.vercel.app)** | **[📖 Documentation](#documentation)**
 
@@ -8,7 +8,7 @@ Search any topic, get AI-summarized answers, and listen to them as natural speec
 
 - 🔍 **Smart Search** - Real-time search results via Serper API
 - 🤖 **AI Summaries** - Intelligent summarization with OpenAI GPT-3.5
-- 🎙️ **Natural Audio** - Human-like text-to-speech via ElevenLabs
+- ❓ **Related Questions** - AI-generated follow-up questions for deeper exploration
 - 📱 **Responsive UI** - Mobile-first design (mobile, tablet, desktop)
 - ⚡ **Fast & Smooth** - Instant API integration with smooth animations
 - 🔒 **Secure** - Branch protection, security scanning, dependency management
@@ -19,7 +19,7 @@ Search any topic, get AI-summarized answers, and listen to them as natural speec
 - **Frontend:** Next.js 15 + TypeScript + React 18 + Tailwind CSS
 - **Backend:** Next.js API Routes (serverless)
 - **Database:** Supabase (Postgres)
-- **APIs:** OpenAI, Serper, ElevenLabs
+- **APIs:** OpenAI, Serper
 - **Deployment:** Vercel
 
 ## Quick Start
@@ -45,7 +45,6 @@ Search any topic, get AI-summarized answers, and listen to them as natural speec
    Edit `.env.local` with your API keys:
    - `OPENAI_API_KEY` - [Get from OpenAI](https://platform.openai.com/api-keys)
    - `SERPER_API_KEY` - [Get from Serper](https://serper.dev/)
-   - `ELEVENLABS_API_KEY` - [Get from ElevenLabs](https://elevenlabs.io/)
    - `SUPABASE_URL` & `SUPABASE_SERVICE_KEY` - [Get from Supabase](https://supabase.com/) (optional)
 
 ### Setup Checklist
@@ -59,8 +58,7 @@ Before running locally, complete these steps:
 - [ ] Add your API keys to `.env.local`:
   - OPENAI_API_KEY from https://platform.openai.com/api-keys
   - SERPER_API_KEY from https://serper.dev/
-  - ELEVENLABS_API_KEY from https://elevenlabs.io/
-- [ ] (Optional) Customize ELEVENLABS_VOICE_ID or OPENAI_MODEL
+- [ ] (Optional) Customize OPENAI_MODEL
 - [ ] Run `npm run dev`
 - [ ] Open http://localhost:3000
 
@@ -97,7 +95,7 @@ npm run start
 │   └── api/
 │       ├── search/         # Serper API integration
 │       ├── summarize/      # OpenAI summarization
-│       └── tts/            # ElevenLabs text-to-speech
+│       └── questions/      # AI-powered related questions
 ├── components/             # React components
 ├── lib/                    # Utilities and API clients
 ├── types/                  # TypeScript type definitions
@@ -151,22 +149,26 @@ Summarize search results with AI.
 }
 ```
 
-### POST /api/tts
-Convert text to audio.
+### POST /api/questions
+Generate AI-powered follow-up questions based on search query and summary.
 
 **Request:**
 ```json
 {
-  "text": "Summary text",
-  "voice": "nova"
+  "query": "artificial intelligence",
+  "summary": "AI is a branch of computer science..."
 }
 ```
 
 **Response:**
 ```json
 {
-  "audioUrl": "https://...",
-  "duration": 45
+  "questions": [
+    "What are the main types of artificial intelligence?",
+    "How does machine learning differ from deep learning?",
+    "What are the ethical implications of AI?",
+    "..."
+  ]
 }
 ```
 
@@ -176,9 +178,8 @@ See `.env.example` for all required variables. Key variables:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `OPENAI_API_KEY` | Yes | OpenAI API for summarization |
+| `OPENAI_API_KEY` | Yes | OpenAI API for summarization and question generation |
 | `SERPER_API_KEY` | Yes | Serper for search results |
-| `ELEVENLABS_API_KEY` | Yes | ElevenLabs for text-to-speech |
 | `SUPABASE_URL` | No | Supabase database (for history) |
 | `SUPABASE_SERVICE_KEY` | No | Supabase authentication |
 

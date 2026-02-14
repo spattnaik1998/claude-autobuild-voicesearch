@@ -18,16 +18,16 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const colorClasses = {
-    blue: 'text-blue-500',
-    indigo: 'text-indigo-500',
-    slate: 'text-slate-400',
+    blue: 'text-blue-500 dark:text-blue-400',
+    indigo: 'text-indigo-500 dark:text-indigo-400',
+    slate: 'text-slate-400 dark:text-slate-500',
   };
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
       <div className="relative">
         <svg
-          className={`${sizeClasses[size]} ${colorClasses[color]} animate-spin`}
+          className={`${sizeClasses[size]} ${colorClasses[color]} animate-spin transition-colors duration-300`}
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -47,7 +47,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           />
         </svg>
       </div>
-      {message && <p className="text-slate-600 text-sm">{message}</p>}
+      {message && <p className="text-slate-600 dark:text-slate-400 text-sm transition-colors duration-300">{message}</p>}
     </div>
   );
 };

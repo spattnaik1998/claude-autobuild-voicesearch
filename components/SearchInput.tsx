@@ -68,16 +68,16 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           disabled={isLoading}
           className={`
             w-full px-5 py-3.5 pr-14
-            bg-white border-2 rounded-xl
-            text-base font-medium
-            placeholder:text-slate-400
+            bg-white dark:bg-slate-800 border-2 rounded-xl
+            text-base font-medium text-slate-900 dark:text-white
+            placeholder:text-slate-400 dark:placeholder:text-slate-500
             transition-all duration-200
             ${
               error
-                ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-                : 'border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100'
+                ? 'border-red-300 dark:border-red-700 focus:border-red-400 dark:focus:border-red-600 focus:ring-red-100 dark:focus:ring-red-900/30'
+                : 'border-slate-200 dark:border-slate-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30'
             }
-            focus:outline-none disabled:bg-slate-50 disabled:cursor-not-allowed
+            focus:outline-none disabled:bg-slate-50 dark:disabled:bg-slate-700 disabled:cursor-not-allowed
           `}
         />
         <Button
@@ -106,7 +106,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           )}
         </Button>
       </div>
-      {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400 text-sm mt-2 transition-colors duration-200">{error}</p>}
     </form>
   );
 };
