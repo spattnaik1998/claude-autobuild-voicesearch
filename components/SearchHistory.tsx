@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { getGroupedHistory, clearSearchHistory, deleteHistoryEntry, formatTime } from '@/lib/storage';
 import type { SearchHistoryEntry } from '@/types';
 import { Button } from './Button';
@@ -18,30 +19,35 @@ export function SearchHistory({
   onSelectEntry,
   currentQuery,
 }: SearchHistoryProps) {
+  const { activeWorkspaceId } = useWorkspaceStore();
   const [groupedHistory, setGroupedHistory] = useState<Record<string, SearchHistoryEntry[]>>({});
   const [searchFilter, setSearchFilter] = useState('');
+
+  const loadHistory = useCallback(() => {
+    try {
+      const grouped = getGroupedHistory(activeWorkspaceId || 'default');
+      setGroupedHistory(grouped);
+    } catch (error) {
+      console.error('Failed to load history:', error);
+    }
+  }, [activeWorkspaceId]);
 
   useEffect(() => {
     if (isOpen) {
       loadHistory();
     }
-  }, [isOpen]);
-
-  const loadHistory = () => {
-    const grouped = getGroupedHistory();
-    setGroupedHistory(grouped);
-  };
+  }, [isOpen, activeWorkspaceId, loadHistory]);
 
   const handleClearHistory = () => {
-    if (window.confirm('Are you sure you want to clear all search history?')) {
-      clearSearchHistory();
+    if (window.confirm('Are you sure you want to clear all search history for this workspace?')) {
+      clearSearchHistory(activeWorkspaceId || 'default');
       setGroupedHistory({});
     }
   };
 
   const handleDeleteEntry = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteHistoryEntry(id);
+    deleteHistoryEntry(id, activeWorkspaceId || 'default');
     loadHistory();
   };
 
