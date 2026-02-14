@@ -14,6 +14,7 @@ interface NotificationStoreState {
   notifications: Notification[];
   toasts: Notification[];
   unreadCount: number;
+  toastTimeouts: Map<string, NodeJS.Timeout>;
 }
 
 interface NotificationStoreActions {
@@ -25,6 +26,7 @@ interface NotificationStoreActions {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
+  clearAllTimeouts: () => void;
 }
 
 type NotificationStore = NotificationStoreState & NotificationStoreActions;
@@ -33,6 +35,7 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
   notifications: [],
   toasts: [],
   unreadCount: 0,
+  toastTimeouts: new Map(),
 
   addNotification: (notif) => {
     const newNotification: Notification = {
@@ -63,16 +66,35 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
     const timeoutId = setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== newToast.id),
+        toastTimeouts: new Map(state.toastTimeouts) // Clean up on dismiss
       }));
     }, 3000);
+
+    // Track timeout ID for cleanup
+    set((state) => {
+      const newTimeouts = new Map(state.toastTimeouts);
+      newTimeouts.set(newToast.id, timeoutId);
+      return { toastTimeouts: newTimeouts };
+    });
 
     return () => clearTimeout(timeoutId);
   },
 
   dismissToast: (id) => {
-    set((state) => ({
-      toasts: state.toasts.filter((t) => t.id !== id),
-    }));
+    set((state) => {
+      // Clear associated timeout
+      const timeout = state.toastTimeouts.get(id);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      const newTimeouts = new Map(state.toastTimeouts);
+      newTimeouts.delete(id);
+
+      return {
+        toasts: state.toasts.filter((t) => t.id !== id),
+        toastTimeouts: newTimeouts,
+      };
+    });
   },
 
   markAsRead: (id) => {
@@ -92,10 +114,23 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
   },
 
   clearAll: () => {
-    set({
-      notifications: [],
-      toasts: [],
-      unreadCount: 0,
+    set((state) => {
+      // Clear all timeouts
+      state.toastTimeouts.forEach(timeout => clearTimeout(timeout));
+      return {
+        notifications: [],
+        toasts: [],
+        unreadCount: 0,
+        toastTimeouts: new Map(),
+      };
+    });
+  },
+
+  clearAllTimeouts: () => {
+    set((state) => {
+      // Clear all timeouts
+      state.toastTimeouts.forEach(timeout => clearTimeout(timeout));
+      return { toastTimeouts: new Map() };
     });
   },
 }));

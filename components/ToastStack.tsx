@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useNotificationStore } from '@/stores/notificationStore';
 
 const ICON_MAP = {
@@ -37,7 +38,14 @@ const COLOR_MAP = {
 };
 
 export function ToastStack() {
-  const { toasts, dismissToast } = useNotificationStore();
+  const { toasts, dismissToast, clearAllTimeouts } = useNotificationStore();
+
+  // Cleanup timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts();
+    };
+  }, [clearAllTimeouts]);
 
   if (toasts.length === 0) return null;
 

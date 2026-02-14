@@ -1,7 +1,9 @@
 import type { SearchHistoryEntry } from '@/types';
+import { isValidHistoryEntry, repairEntry } from './storage-diagnostic';
 
 const HISTORY_KEY_PREFIX = 'voicesearch_history';
 const MAX_HISTORY_ENTRIES = 50;
+const MAX_STORAGE_SIZE = 100 * 1024; // 100KB per workspace
 
 /**
  * Get the storage key for a workspace
@@ -15,19 +17,47 @@ const getHistoryKey = (workspaceId?: string): string => {
  * Save a search entry to localStorage history
  * Maintains chronological order (newest first)
  * Workspace-isolated storage
+ * Includes validation and size limits
  */
 export const saveSearchToHistory = (
   entry: SearchHistoryEntry,
   workspaceId?: string
 ): void => {
   try {
+    // Validate entry
+    if (!isValidHistoryEntry(entry)) {
+      console.error('Invalid history entry:', entry);
+      return;
+    }
+
     const history = getSearchHistory(workspaceId);
     const entryWithWorkspace = { ...entry, workspaceId: workspaceId || 'default' };
     history.unshift(entryWithWorkspace);
     const limited = history.slice(0, MAX_HISTORY_ENTRIES);
-    localStorage.setItem(getHistoryKey(workspaceId), JSON.stringify(limited));
+
+    const serialized = JSON.stringify(limited);
+
+    // Check size limit
+    if (serialized.length > MAX_STORAGE_SIZE) {
+      console.warn(`Storage limit exceeded for workspace ${workspaceId || 'default'}, trimming entries`);
+      // Remove entries until size is acceptable
+      const trimmed = limited.slice(0, Math.max(10, Math.floor(limited.length * 0.75)));
+      localStorage.setItem(getHistoryKey(workspaceId), JSON.stringify(trimmed));
+    } else {
+      localStorage.setItem(getHistoryKey(workspaceId), serialized);
+    }
   } catch (error) {
     console.error('Failed to save search to history:', error);
+    // Emergency fallback: try to clear old entries if quota exceeded
+    if (error instanceof DOMException && error.code === 22) {
+      try {
+        const fallback = getSearchHistory(workspaceId);
+        const trimmed = fallback.slice(0, 10);
+        localStorage.setItem(getHistoryKey(workspaceId), JSON.stringify(trimmed));
+      } catch (fallbackError) {
+        console.error('Emergency fallback failed:', fallbackError);
+      }
+    }
   }
 };
 
@@ -35,11 +65,46 @@ export const saveSearchToHistory = (
  * Retrieve all search history from localStorage
  * Returns empty array if no history exists
  * Workspace-isolated retrieval
+ * Validates and repairs entries on load
  */
 export const getSearchHistory = (workspaceId?: string): SearchHistoryEntry[] => {
   try {
     const data = localStorage.getItem(getHistoryKey(workspaceId));
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+
+    const parsed = JSON.parse(data) as unknown;
+    if (!Array.isArray(parsed)) {
+      console.error('History data is not an array, clearing');
+      clearSearchHistory(workspaceId);
+      return [];
+    }
+
+    // Validate and repair entries
+    const validEntries: SearchHistoryEntry[] = [];
+    let hasRepaired = false;
+
+    for (const entry of parsed) {
+      if (isValidHistoryEntry(entry)) {
+        validEntries.push(entry);
+      } else {
+        const repaired = repairEntry(entry);
+        if (repaired) {
+          validEntries.push(repaired);
+          hasRepaired = true;
+        }
+      }
+    }
+
+    // Save repaired data back to storage
+    if (hasRepaired && validEntries.length > 0) {
+      try {
+        localStorage.setItem(getHistoryKey(workspaceId), JSON.stringify(validEntries));
+      } catch (error) {
+        console.error('Failed to save repaired history:', error);
+      }
+    }
+
+    return validEntries;
   } catch (error) {
     console.error('Failed to retrieve search history:', error);
     return [];

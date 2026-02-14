@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { getGroupedHistory, clearSearchHistory, deleteHistoryEntry, formatTime } from '@/lib/storage';
 import type { SearchHistoryEntry } from '@/types';
@@ -83,19 +83,21 @@ export function SearchHistory({
     onClose();
   };
 
-  // Filter history based on search input
-  const filteredGroupedHistory = Object.entries(groupedHistory).reduce(
-    (acc, [group, entries]) => {
-      const filtered = entries.filter(entry =>
-        entry.query.toLowerCase().includes(searchFilter.toLowerCase())
-      );
-      if (filtered.length > 0) {
-        acc[group] = filtered;
-      }
-      return acc;
-    },
-    {} as Record<string, SearchHistoryEntry[]>
-  );
+  // Memoize filter computation to avoid recalculation on every render
+  const filteredGroupedHistory = useMemo(() => {
+    return Object.entries(groupedHistory).reduce(
+      (acc, [group, entries]) => {
+        const filtered = entries.filter(entry =>
+          entry.query.toLowerCase().includes(searchFilter.toLowerCase())
+        );
+        if (filtered.length > 0) {
+          acc[group] = filtered;
+        }
+        return acc;
+      },
+      {} as Record<string, SearchHistoryEntry[]>
+    );
+  }, [groupedHistory, searchFilter]);
 
   const isEmpty = Object.values(filteredGroupedHistory).every(group => group.length === 0);
   const totalSearches = Object.values(groupedHistory).flat().length;
