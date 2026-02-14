@@ -16,11 +16,13 @@ import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
+import { NotesLibrary } from '@/components/knowledge/NotesLibrary';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useToast } from '@/lib/hooks';
 import type { SearchResult, SummaryResponse, QuestionsResponse, SearchHistoryEntry } from '@/types';
-import { saveSearchToHistory } from '@/lib/storage';
+import { saveSearchToHistoryDebounced } from '@/lib/storage-optimized';
 import { getSearchStateFromUrl, updateUrlWithSearchState } from '@/lib/url-state';
+import { knowledgeDB } from '@/lib/knowledge-db';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'results' | 'summary' | 'questions'>('results');
@@ -36,9 +38,11 @@ export default function Home() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+  const [isSavingToKnowledge, setIsSavingToKnowledge] = useState(false);
 
   const { activeWorkspaceId, incrementSearchCount } = useWorkspaceStore();
-  const { success } = useToast();
+  const { success, error: showError } = useToast();
 
   // Handle keyboard shortcuts for opening modals
   useEffect(() => {
@@ -54,17 +58,22 @@ export default function Home() {
     const handleOpenNotifications = () => {
       setNotificationsOpen(true);
     };
+    const handleOpenKnowledge = () => {
+      setKnowledgeOpen(true);
+    };
 
     window.addEventListener('show-shortcuts-modal', handleShowShortcuts);
     window.addEventListener('open-history', handleOpenHistory);
     window.addEventListener('open-settings', handleOpenSettings);
     window.addEventListener('open-notifications', handleOpenNotifications);
+    window.addEventListener('open-knowledge', handleOpenKnowledge);
 
     return () => {
       window.removeEventListener('show-shortcuts-modal', handleShowShortcuts);
       window.removeEventListener('open-history', handleOpenHistory);
       window.removeEventListener('open-settings', handleOpenSettings);
       window.removeEventListener('open-notifications', handleOpenNotifications);
+      window.removeEventListener('open-knowledge', handleOpenKnowledge);
     };
   }, []);
 
@@ -90,7 +99,7 @@ export default function Home() {
         workspaceId: activeWorkspaceId || 'default',
       };
 
-      saveSearchToHistory(entry, activeWorkspaceId || 'default');
+      saveSearchToHistoryDebounced(entry, activeWorkspaceId || 'default');
       incrementSearchCount(activeWorkspaceId || 'default');
       success(`Search saved to ${activeWorkspaceId === 'default' ? 'Personal' : 'workspace'}`);
       updateUrlWithSearchState({ query });
@@ -194,6 +203,68 @@ export default function Home() {
     handleSearch(question);
   };
 
+  const generateNoteContent = (): string => {
+    if (!summary) return '';
+
+    const keyPointsSection = summary.keyPoints
+      ? `## Key Points\n${summary.keyPoints.map((point) => `- ${point}`).join('\n')}`
+      : '';
+
+    const questionsSection = questions.length > 0
+      ? `## Explore More\n${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}`
+      : '';
+
+    return `# ${query}
+
+## Summary
+${summary.summary}
+
+${keyPointsSection}
+
+${questionsSection}
+
+---
+*Generated from search on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*`;
+  };
+
+  const handleSaveToKnowledge = async () => {
+    if (!summary) {
+      showError('Please complete the search first');
+      return;
+    }
+
+    setIsSavingToKnowledge(true);
+
+    try {
+      const noteContent = generateNoteContent();
+
+      const newNote = await knowledgeDB.createNote({
+        workspace_id: activeWorkspaceId || 'default',
+        title: query,
+        content: noteContent,
+        search_query: query,
+        source_searches: searchResults?.map((_, i) => `result-${i}`) || [],
+        metadata: {
+          originalSummary: summary.summary,
+          keyPoints: summary.keyPoints,
+          questions,
+        },
+      });
+
+      success(`✨ Note saved to Knowledge Base`);
+
+      // Optionally add tags based on content
+      if (query.includes('react')) await knowledgeDB.addTag(newNote.id, 'react');
+      if (query.includes('typescript')) await knowledgeDB.addTag(newNote.id, 'typescript');
+    } catch (err) {
+      showError(
+        err instanceof Error ? err.message : 'Failed to save note to Knowledge Base'
+      );
+    } finally {
+      setIsSavingToKnowledge(false);
+    }
+  };
+
   const handleReset = () => {
     setQuery('');
     setSearchResults(null);
@@ -252,6 +323,16 @@ export default function Home() {
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => setKnowledgeOpen(true)}
+              className="transition-all duration-200"
+              aria-label="Open knowledge base"
+              title="Knowledge Base (Cmd+B)"
+            >
+              📚
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setHistoryOpen(true)}
               className="transition-all duration-200"
               aria-label="Open search history"
@@ -265,7 +346,7 @@ export default function Home() {
               onClick={() => setNotificationsOpen(true)}
               className="transition-all duration-200 relative"
               aria-label="Open notifications"
-              title="Notifications (Cmd+Shift+N)"
+              title="Notifications (Cmd+N)"
             >
               🔔
             </Button>
@@ -302,7 +383,7 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* Tab Navigation with Share Button */}
+            {/* Tab Navigation with Action Buttons */}
             <div className="flex items-center justify-between gap-4 mb-6">
               <div className="flex-1">
                 <TabNavigation
@@ -316,7 +397,20 @@ export default function Home() {
                 />
               </div>
               {searchResults && (
-                <ShareButton query={query} />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleSaveToKnowledge}
+                    isLoading={isSavingToKnowledge}
+                    disabled={!summary}
+                    title="Save to Knowledge Base"
+                    className="transition-all duration-200"
+                  >
+                    💡
+                  </Button>
+                  <ShareButton query={query} />
+                </div>
               )}
             </div>
 
@@ -375,6 +469,10 @@ export default function Home() {
       </div>
 
       {/* Modals */}
+      <NotesLibrary
+        isOpen={knowledgeOpen}
+        onClose={() => setKnowledgeOpen(false)}
+      />
       <NotificationCenter
         isOpen={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}

@@ -69,7 +69,7 @@ export interface Workspace {
 export interface Command {
   id: string;
   label: string;
-  category: 'search' | 'workspace' | 'action' | 'setting' | 'history';
+  category: 'search' | 'workspace' | 'action' | 'setting' | 'history' | 'knowledge';
   icon: string;
   shortcut?: string;
   action: () => void | Promise<void>;
@@ -84,4 +84,54 @@ export interface Notification {
   timestamp: number;
   isRead: boolean;
   actionUrl?: string;
+}
+
+// Knowledge Management System Types
+export interface KnowledgeNote {
+  id: string;
+  workspace_id: string;
+  title: string;
+  content: string;
+  search_query?: string;
+  source_searches?: string[];
+  created_at: string;
+  updated_at: string;
+  last_reviewed_at?: string;
+  metadata?: {
+    originalSummary?: string;
+    keyPoints?: string[];
+    questions?: string[];
+  };
+}
+
+export interface NoteTag {
+  id: string;
+  note_id: string;
+  tag: string;
+  created_at: string;
+}
+
+export interface NoteLink {
+  id: string;
+  from_note_id: string;
+  to_note_id: string;
+  link_type: 'wikilink' | 'reference' | 'related';
+  created_at: string;
+}
+
+export interface Collection {
+  id: string;
+  workspace_id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CollectionNote {
+  collection_id: string;
+  note_id: string;
+  position: number;
+  added_at: string;
 }

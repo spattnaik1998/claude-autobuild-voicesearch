@@ -9,6 +9,7 @@ Search any topic, get AI-summarized answers, and explore with AI-powered follow-
 - 🔍 **Smart Search** - Real-time search results via Serper API
 - 🤖 **AI Summaries** - Intelligent summarization with OpenAI GPT-3.5
 - ❓ **Related Questions** - AI-generated follow-up questions for deeper exploration
+- 📚 **Knowledge Base** - Save searches as permanent notes with markdown editing, tags, and search (NEW!)
 - 📱 **Responsive UI** - Mobile-first design (mobile, tablet, desktop)
 - ⚡ **Fast & Smooth** - Instant API integration with smooth animations
 - 🔒 **Secure** - Branch protection, security scanning, dependency management
@@ -45,7 +46,7 @@ Search any topic, get AI-summarized answers, and explore with AI-powered follow-
    Edit `.env.local` with your API keys:
    - `OPENAI_API_KEY` - [Get from OpenAI](https://platform.openai.com/api-keys)
    - `SERPER_API_KEY` - [Get from Serper](https://serper.dev/)
-   - `SUPABASE_URL` & `SUPABASE_SERVICE_KEY` - [Get from Supabase](https://supabase.com/) (optional)
+   - `NEXT_PUBLIC_SUPABASE_URL` & `NEXT_PUBLIC_SUPABASE_ANON_KEY` - [Get from Supabase](https://supabase.com/) (for Knowledge Base)
 
 ### Setup Checklist
 

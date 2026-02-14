@@ -14,6 +14,7 @@ const CATEGORY_LABELS = {
   action: 'Actions',
   setting: 'Settings',
   history: 'History',
+  knowledge: 'Knowledge',
 };
 
 export function CommandPalette({
@@ -89,6 +90,17 @@ export function CommandPalette({
         shortcut: 'Cmd+H',
         action: () => {
           onOpenHistory?.();
+          close();
+        },
+      },
+      {
+        id: 'open-knowledge',
+        label: 'Knowledge Base',
+        category: 'knowledge',
+        icon: '📚',
+        shortcut: 'Cmd+B',
+        action: () => {
+          window.dispatchEvent(new CustomEvent('open-knowledge'));
           close();
         },
       },

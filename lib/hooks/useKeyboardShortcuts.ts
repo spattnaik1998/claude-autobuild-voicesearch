@@ -11,6 +11,7 @@ interface KeyboardShortcutCallbacks {
   onOpenSettings?: () => void;
   onToggleDarkMode?: () => void;
   onOpenNotifications?: () => void;
+  onOpenKnowledge?: () => void;
 }
 
 export function useKeyboardShortcuts(callbacks: KeyboardShortcutCallbacks = {}) {
@@ -66,6 +67,13 @@ export function useKeyboardShortcuts(callbacks: KeyboardShortcutCallbacks = {}) 
         return;
       }
 
+      // Cmd/Ctrl + B: Open knowledge base
+      if (modKey && e.key === 'b') {
+        e.preventDefault();
+        callbacks.onOpenKnowledge?.();
+        return;
+      }
+
       // Cmd/Ctrl + 1-9: Switch to workspace
       if (modKey && e.key >= '1' && e.key <= '9') {
         e.preventDefault();
@@ -118,6 +126,11 @@ export const KEYBOARD_SHORTCUTS = [
   {
     keys: ['Cmd/Ctrl', 'N'],
     description: 'New search',
+    category: 'Global',
+  },
+  {
+    keys: ['Cmd/Ctrl', 'B'],
+    description: 'Open knowledge base',
     category: 'Global',
   },
   {
