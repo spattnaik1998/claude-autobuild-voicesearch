@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SearchInput } from '@/components/SearchInput';
 import { SearchResults } from '@/components/SearchResults';
 import { SummaryCard } from '@/components/SummaryCard';
@@ -41,8 +41,9 @@ export default function Home() {
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
   const [isSavingToKnowledge, setIsSavingToKnowledge] = useState(false);
 
-  const { activeWorkspaceId, incrementSearchCount } = useWorkspaceStore();
+  const { activeWorkspaceId, incrementSearchCount, workspaces } = useWorkspaceStore();
   const { success, error: showError } = useToast();
+  const isFirstRender = useRef(true);
 
   // Handle keyboard shortcuts for opening modals
   useEffect(() => {
@@ -85,6 +86,25 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Reset search state when workspace changes
+  useEffect(() => {
+    // Skip on initial mount
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // Clear all search state
+    handleReset();
+
+    // Show confirmation toast
+    const workspace = workspaces.find(ws => ws.id === activeWorkspaceId);
+    if (workspace) {
+      success(`Switched to ${workspace.name}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeWorkspaceId]); // Only runs when workspace ID changes
 
   // Save to history and update URL when search completes
   useEffect(() => {
@@ -284,6 +304,14 @@ ${questionsSection}
     setSummary(null);
     setQuestions([]);
     setError(null);
+    setActiveTab('results');
+
+    // Clear URL query parameters
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('state');
+      window.history.replaceState({}, '', url.toString());
+    }
   };
 
   const handleSelectHistoryEntry = (entry: SearchHistoryEntry) => {
